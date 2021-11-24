@@ -300,3 +300,7 @@ footer a {
   pointer-events: none;
   transition: transform 1200ms var(--acc-back);
 }
+
+.cleanfloat::after{display: block; clear: both; content:""; visibility: hidden; height: 0;}
+ ul li{list-style:none; float:left; font-size:30px; margin:5px; color:#ccc; cursor:pointer;}
+.hs,.cs{color:#f00;}
