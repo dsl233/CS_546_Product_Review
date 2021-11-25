@@ -119,7 +119,7 @@ const exportedMethods = {
         rating:rating
       };
   
-      const updatedInfo = await  restCollection.updateOne(
+      const updatedInfo = await  reviewCollection.updateOne(
         { _id: id },
         { $set: updated }
       );

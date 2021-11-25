@@ -23,7 +23,19 @@ router.get("/product/:id",async (req, res) => {
     }
     try {
         const review = await reviews.getReviewbyProductId(req.params.id);
-        res.json(review);
+        console.log(review);
+        let posts = [];
+        let hasPost = false;
+        for (let i = 0; i < review.length; i++) {
+          let output = review[i];
+          if (output) {
+            posts.push(output);
+          }
+        }
+        if (posts.length > 0) {
+          hasPost = true;
+        }
+        res.render('review/review',{posts: posts, hasPost:hasPost});
     } catch (e) {
         res.status(404).json({ error: 'review not found' });
     }
