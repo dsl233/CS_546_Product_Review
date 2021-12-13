@@ -145,9 +145,9 @@ router.post(
         userDataToUpdate.name = name;
         userDataToUpdate.email = req.session.user;
         userDataToUpdate.password = password;
-        userDataToUpdate.photo = req.file?.filename;
+        userDataToUpdate.photo = req.file.filename;
 
-        if (req.file && !req.file?.mimetype.includes("image")) {
+        if (req.file && !req.file.mimetype.includes("image")) {
           req.session.error = "Please upload an image";
           return res.redirect("/private/profile");
         }
