@@ -5,6 +5,7 @@ const { authMiddleware } = require("../middlewares/auth");
 const session = require("express-session");
 const xss = require("xss");
 const multer = require("multer");
+const reviewData = require("../data/reviews");
 const userData = require("../data/users");
 const { ObjectId } = require("mongodb");
 
@@ -36,7 +37,6 @@ const upload = multer({
 });
 function checkId(id) {
   if (!id) throw "Error: Please provide argument id";
-  //if (typeof id !== "string") throw "Error:ID is not of string type.";
   if (typeof id === "string" && id.trim().length < 1) {
     throw "Error: ID is a blank string has been passed as argument";
   }
@@ -63,6 +63,7 @@ router.post("/search", async (req, res) => {
 
         res.status(200).render("searchPage/searchPage", {
           title: "Search",
+          searchBy: searchTerm,
           products: search_List,
         });
         return;
@@ -80,6 +81,7 @@ router.post("/search", async (req, res) => {
         let search_List = await productData.getProductbyTag(searchTerm);
         res.status(200).render("searchPage/searchPage", {
           title: "Search",
+          searchBy: searchTerm,
           products: search_List,
         });
         return;
@@ -116,6 +118,7 @@ router.get("/search/:id", async (req, res) => {
     });
     return "Error: Search term blank";
   } else {
+    searchTerm = searchTerm.split("-").join(" ");
     searchTerm = searchTerm.toLowerCase();
     if (searchValue === "name" || searchValue === "Search product by") {
       try {
@@ -123,6 +126,7 @@ router.get("/search/:id", async (req, res) => {
         res.status(200).render("searchPage/searchPage", {
           title: "Search",
           products: search_List,
+          searchBy: searchTerm,
         });
       } catch (e) {
         return res.status(404).render("errorPage/noSearch", {
@@ -137,6 +141,7 @@ router.get("/search/:id", async (req, res) => {
         res.status(200).render("searchPage/searchPage", {
           title: "Search",
           products: search_List,
+          searchBy: searchTerm,
         });
       } catch (e) {
         return res.status(404).render("errorPage/noSearch", {
@@ -252,8 +257,6 @@ router.post(
         console.log("error", e);
         req.session.addProductError = e;
         res.redirect("/");
-        // res.redirect("/products/addProducterror");
-        // return res.status(500).json({ message: e, errorMessage: e });
       }
     }
   }
@@ -296,7 +299,6 @@ router.get("/:id", async (req, res) => {
     let hasPost = false;
     for (let i = 0; i < review.length; i++) {
       let output = review[i];
-      //output["username"] = userlist[i].firstName.concat(userlist[i].lastName);
       output["username"] = userlist[i].name;
       output["image"] = !_.isEmpty(userlist[i].img)
         ? `/public/images/upload/${userlist[i].img}`
@@ -314,9 +316,9 @@ router.get("/:id", async (req, res) => {
     if (posts.length > 0) {
       hasPost = true;
     }
-    let IsDeveloper=true;
-    if(product.devId.toString()==usernow){
-      IsDeveloper=false;
+    let IsDeveloper = true;
+    if (product.devId.toString() == usernow) {
+      IsDeveloper = false;
     }
     res.render("products/product", {
       authenticated: req.session.user ? true : false,
@@ -325,6 +327,7 @@ router.get("/:id", async (req, res) => {
       logo: product.logo,
       site: product.websiteUrl,
       tags: product.tags,
+      tagAlias: product.tagAlias,
       developer: product.developer,
       rating: product.rating,
       likes: product.likes,
@@ -334,7 +337,7 @@ router.get("/:id", async (req, res) => {
       hasPost: hasPost,
       productid: req.params.id,
       title: `${product.productName}`,
-      IsDeveloper
+      IsDeveloper,
     });
     return;
   } catch (e) {
@@ -390,7 +393,17 @@ router.post("/delete/:productId", authMiddleware, async (req, res) => {
       return res.status(403).json({ error: "User cannot delete this product" });
     }
     productId = productId.toString();
+    const reviewArr = await reviewData.getReviewbyProductId(productId);
+    for (let i = 0; i < reviewArr.length; i++) {
+      const usrDataDel = await reviewData.DeleteOneReviewToUser(
+        reviewArr[i]._id.toString()
+      );
+      const revDataDel = await reviewData.deleteReview(
+        reviewArr[i]._id.toString()
+      );
+    }
     const delProd = await productData.deleteProduct(productId);
+
     return res.status(200).json({ message: `${delProd} was deleted` });
   } catch (e) {
     return res.status(400).json({ error: `${e}` });

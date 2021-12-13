@@ -18,7 +18,7 @@ function checkString(str) {
   }
   let strremovespace = str.replace(/\s*/g, "");
   if (strremovespace.length === 0) {
-    throw `Don't fool me! The string you input are all empty!`;
+    throw `The string you input are all empty!`;
   }
 }
 
@@ -100,10 +100,7 @@ const exportedMethods = {
     );
     if (!updatedInfo.matchedCount && !updatedInfo.modifiedCount)
       throw "Update rating failed";
-    //Changes to be made before running seed file.
-    // Please un-comment the below line before runnning the seed file and comment line 108
-    //return newReview;
-    //Please un-comment the below line before testing the webapp and comment line 105
+
     return insertInfo;
   },
 
@@ -181,6 +178,9 @@ const exportedMethods = {
     let productId = rev.product;
     let rateall = 0;
     const prodreview = await this.getReviewbyProductId(productId);
+    for (let i = 0; i < prodreview.length; i++) {
+      rateall = parseInt(prodreview[i].rating) + rateall;
+    }
     let averagerate = 0;
     if (prodreview.length != 0) {
       averagerate = rateall / prodreview.length;
@@ -225,11 +225,11 @@ const exportedMethods = {
     let rateall = 0;
     const prodreview = await this.getReviewbyProductId(productId);
     let averagerate = 0;
-    if (prodreview.length != 0) {
-      averagerate = rateall / prodreview.length;
-    }
     for (let i = 0; i < prodreview.length; i++) {
       rateall = parseInt(prodreview[i].rating) + rateall;
+    }
+    if (prodreview.length != 0) {
+      averagerate = rateall / prodreview.length;
     }
     averagerate = averagerate.toFixed(2);
     const prodCollection = await products();
@@ -245,21 +245,6 @@ const exportedMethods = {
       throw "Update rating failed";
 
     return reviewId;
-  },
-
-  async DeleteOneReviewToUser(reviewId) {
-    if (!reviewId) throw "You must provide an id";
-    reviewId = reviewId.toString();
-    checkString(reviewId);
-    reviewId = myDBfunction(reviewId);
-    const reviewCollection = await users();
-    const updateInfo = await reviewCollection.updateOne(
-      {  },
-      { $pull: { reviews: { _id: reviewId } } }
-    );
-    if (!updateInfo.matchedCount && !updateInfo.modifiedCount)
-      throw "Update failed";
-    return "Delete review to user successfully!";
   },
 
   async DeleteReviewToUser(userid, reviewId) {
@@ -318,7 +303,7 @@ const exportedMethods = {
     checkString(reviewId);
     reviewId = myDBfunction(reviewId);
     const reviewCollection = await users();
-    const updateInfo = await reviewCollection.updateOne(
+    const updateInfo = await reviewCollection.updateMany(
       {},
       { $pull: { reviews: { _id: reviewId } } }
     );

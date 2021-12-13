@@ -39,16 +39,30 @@ function checkInputs(
   }
   if (!Array.isArray(tags) || tags.length === 0)
     throw "Error: Tag is not of string type or tag field is empty";
-  //let parsedTags = [...new Set(tags)];
   for (let i = 0; i < tags.length; i++) {
+    tags[i] = tags[i].trim();
     if (typeof tags[i] !== "string" || tags[i].trim().length < 1) {
       throw "Error: Tag is not of string type or tag field is empty";
     }
   }
 }
 
+const createTagAlias = (tags) => {
+  let tagAlias = [];
+  tagAlias = tags.reduce((acc, tag) => {
+    const newtag =
+      tag.trim().split(" ").length > 1
+        ? tag.trim().split(" ").join("-")
+        : tag.trim();
+
+    const newElem = { name: tag.trim(), alias: newtag };
+    acc.push(newElem);
+    return acc;
+  }, []);
+  return tagAlias;
+};
 //
-// Just a helper function to check db id's
+// helper function to check db id's
 //
 function isValidObjectId(id) {
   if (!id) throw "Error: Please provide argument id";
@@ -111,6 +125,7 @@ let exportedMethods = {
       rating: 0.0,
       likes: 0,
       devId: devId,
+      tagAlias: createTagAlias(tags),
     };
     const checkProd = await productList.findOne({
       productName: productName,
@@ -196,7 +211,7 @@ let exportedMethods = {
     isValidObjectId(prodId);
     prodId = ObjectId(prodId);
     const prodList = await products();
-    const reviewList = await reviews();
+    const userList = await users();
     const prodCheck = prodList.findOne({ _id: prodId });
     if (!prodCheck) {
       throw "Error: Product to be deleted was not found in the database";

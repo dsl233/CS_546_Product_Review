@@ -42,7 +42,6 @@ module.exports = {
   },
 
   async createPost(userId, name) {
-    // test the userid name
     if (!userId) throw "No userId provided";
     isValidObjectId(userId);
     isValidString(name, "postName", 1);
@@ -185,7 +184,10 @@ module.exports = {
     const userId = reply.creator;
     const userWithData = await usersCollection.findOne({ _id: userId });
 
-    reply.user = { name: userWithData.name, photo: userWithData.photo };
+    reply.user = {
+      name: userWithData.name,
+      photo: userWithData.photo || "guest-user.jpg",
+    };
     return reply;
   },
 
@@ -206,7 +208,7 @@ module.exports = {
           name: user.name,
           email: user.email,
           photo: _.isEmpty(user.photo)
-            ? `/public/images/guest-user.jpg`
+            ? "/public/images/guest-user.jpg"
             : `/public/images/upload/${user.photo}`,
         };
         return { ...reply, user: parsedUser };
