@@ -290,8 +290,8 @@ const exportedMethods = {
       }
       reviewlist.push({
         ...review,
-        productName: product.productName || "",
-        productImg: product.logo || " ",
+        productName: product?.productName || "",
+        productImg: product?.logo || " ",
       });
     }
     return reviewlist;
