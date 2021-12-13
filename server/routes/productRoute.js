@@ -482,7 +482,7 @@ router.post(
       websiteUrl = xss(websiteUrl);
       tags = xss(tags);
       developer = xss(developer);
-      let photo = req.file.filename || product.logo;
+      let photo = req.file?.filename || product.logo;
       photo = xss(photo);
       photo = photo.trim();
 
